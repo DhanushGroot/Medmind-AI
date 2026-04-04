@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Score</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: #FFFFFF;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="file"],
+  select {
+    width: calc(100% - 2px); /* Adjusting for border width */
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  input[type="submit"] {
+    background-color: #5B0888;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+  }
+  input[type="submit"]:hover {
+    background-color: #360451;
+      color:white;
+  }
+  h2 {
+    text-align: center;
+  }
+  .error-message {
+    color: red;
+    font-size: 12px;
+  }
+  .small-text {
+    font-size: 12px;
+  }
+  .role-sections {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .role-section {
+    width: 175px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0;
+    border: 2px solid transparent;
+  }
+  .role-section.active {
+    border-color: #5B0888;
+    background-color: #E5CFF7;
+  }
+</style>
+<script>
+  function validateUserForm() {
+      
+    if (!validateDOB()) {
+        return false;
+    }
+      
+    var password = document.getElementById("password").value;
+    var retypePassword = document.getElementById("retype_password").value;
+
+    // Ensure password and retype password match
+    if (password !== retypePassword) {
+        document.getElementById("retype_password_error").innerHTML = "Passwords do not match";
+        return false;
+    } else {
+        document.getElementById("retype_password_error").innerHTML = "";
+    }
+
+    // Ensure password meets length requirements
+    if (password.length < 8) {
+        document.getElementById("password_error").innerHTML = "Password must contain at least 8 characters";
+        return false;
+    } else {
+        document.getElementById("password_error").innerHTML = "";
+    }
+
+    // Check if password is too similar to other personal information
+    var email = document.getElementById("email").value;
+    var fullname = document.getElementById("fullname").value;
+    var dob = document.getElementById("dob").value;
+    var contactInfo = document.getElementById("contactInfo").value;
+
+    var personalInfo = [email, fullname, dob, contactInfo];
+    if (personalInfo.includes(password)) {
+        document.getElementById("password_error").innerHTML = "Your password can't be too similar to your other personal information.";
+        return false;
+    }
+
+    // Check if password is a commonly used password
+    var commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password1"];
+    if (commonPasswords.includes(password.toLowerCase())) {
+        document.getElementById("password_error").innerHTML = "Your password can't be a commonly used password.";
+        return false;
+    }
+
+    // Check if password is entirely numeric
+    if (/^\d+$/.test(password)) {
+        document.getElementById("password_error").innerHTML = "Your password can't be entirely numeric.";
+        return false;
+    }
+
+    // Ensure all fields are filled out
+    var formElements = document.getElementById("registration_form").elements;
+    for (var i = 0; i < formElements.length; i++) {
+      if (formElements[i].tagName === "INPUT" || formElements[i].tagName === "SELECT") {
+        if (formElements[i].value === "") {
+          document.getElementById("form_error").innerHTML = "Please fill out all fields";
+          return false;
+        }
+      }
+    }
+
+    document.getElementById("form_error").innerHTML = "";
+    document.getElementById("password_error").innerHTML = "";
+    document.getElementById("retype_password_error").innerHTML = "";
+
+    return true;
+  }
+  
+  function validateHealthcareAdminForm() {
+      var password = document.getElementById("admin_password").value;
+      var retypePassword = document.getElementById("admin_retype_password").value;
+
+      // Ensure password and retype password match
+      if (password !== retypePassword) {
+          document.getElementById("admin_retype_password_error").innerHTML = "Passwords do not match";
+          return false;
+      } else {
+          document.getElementById("admin_retype_password_error").innerHTML = "";
+      }
+
+      // Ensure password meets all requirements
+      if (password.length < 8) {
+          document.getElementById("admin_password_error").innerHTML = "Password must contain at least 8 characters";
+          return false;
+      } else {
+          document.getElementById("admin_password_error").innerHTML = "";
+      }
+
+      // Check if password is too similar to other personal information
+      var email = document.getElementById("admin_email").value;
+      var fullname = document.getElementById("admin_fullname").value;
+      var contactInfo = document.getElementById("admin_contactInfo").value;
+
+      var personalInfo = [email, fullname, contactInfo];
+      if (personalInfo.includes(password)) {
+          document.getElementById("admin_password_error").innerHTML = "Your password can't be too similar to your other personal information.";
+          return false;
+      }
+
+      // Check if password is a commonly used password
+      var commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password1"];
+      if (commonPasswords.includes(password.toLowerCase())) {
+          document.getElementById("admin_password_error").innerHTML = "Your password can't be a commonly used password.";
+          return false;
+      }
+
+      // Check if password is entirely numeric
+      if (/^\d+$/.test(password)) {
+          document.getElementById("admin_password_error").innerHTML = "Your password can't be entirely numeric.";
+          return false;
+      }
+
+      // Ensure all fields are filled out
+      var formElements = document.getElementById("registration_form").elements;
+      for (var i = 0; i < formElements.length; i++) {
+          if (formElements[i].tagName === "INPUT" || formElements[i].tagName === "SELECT") {
+            if (formElements[i].value === "") {
+                document.getElementById("form_error").innerHTML = "Please fill out all fields";
+                return false;
+            }
+          }
+      }
+
+      document.getElementById("form_error").innerHTML = "";
+      document.getElementById("admin_password_error").innerHTML = "";
+      document.getElementById("admin_retype_password_error").innerHTML = "";
+
+    return true;
+  }
+
+  function showPasswordRequirements() {
+    document.getElementById("password_requirements").style.display = "block";
+  }
+
+  function hidePasswordRequirements() {
+    document.getElementById("password_requirements").style.display = "none";
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      function selectRole(role) {
+        if (role === 'Healthcare Admin') {
+          document.getElementById('adminForm').style.display = 'block';
+          document.getElementById('userForm').style.display = 'none';
+        } else {
+          document.getElementById('adminForm').style.display = 'none';
+          document.getElementById('userForm').style.display = 'block';
+        }
+    
+        document.getElementById('user_role_section').classList.toggle('active', role === 'User');
+        document.getElementById('admin_role_section').classList.toggle('active', role === 'Healthcare Admin');
+      }
+    
+      selectRole('User');
+    
+      document.getElementById('user_role_section').onclick = function() { selectRole('User'); };
+      document.getElementById('admin_role_section').onclick = function() { selectRole('Healthcare Admin'); };
+  });
+  
+  function validateDOB() {
+        var dobInput = document.getElementById('dob');
+        var dobError = document.getElementById('dobError');
+        var minDob = '1910-01-01';
+        var today = new Date().toISOString().split('T')[0];
+        var dobValue = dobInput.value;
+        
+        dobError.textContent = '';
+        
+        if (dobValue < minDob || dobValue > today) {
+            dobError.textContent = 'Date of birth must be between January 1, 1910, and today.';
+            return false;
+        }
+        
+        return true;
+    }
+  
+</script>
+</head>
+{%  include 'header.html' %}
+
+<body>
+
+<h2>Account Registration</h2>
+
+<div class="role-sections">
+    <div id="user_role_section" class="role-section active" onclick="selectRole('User')">User</div>
+    <div id="admin_role_section" class="role-section" onclick="selectRole('Healthcare Admin')">Healthcare Admin</div>
+</div>
+
+<form id="userForm" action="{% url 'registration' %}" method="post" enctype="multipart/form-data" onsubmit="return validateUserForm()" style="display: none">
+  {% csrf_token %}
+  <input type="hidden" name="role" id="selected_role" value="User">
+
+  <div id="error_message" class="error-message">
+    {{ error_message }}
+  </div><br>
+
+    <label for="email">Email<span style="color: red;">*</span></label>
+    <input type="email" id="email" name="email" required value="{{ email }}"><br>
+    
+    <label for="password">Password<span style="color: red;">*</span></label>
+    <input type="password" id="password" name="password" required onfocus="showPasswordRequirements()" onblur="hidePasswordRequirements()">
+    <div id="password_requirements" class="password-requirements" style="display: none;">
+        Password must be at least 8 characters long, cannot be common or similar to personal information, and cannot be fully numeric.
+    </div>
+    <span id="password_error" class="error-message"></span><br>
+    
+    <label for="retype_password">Confirm Password<span style="color: red;">*</span></label>
+    <input type="password" id="retype_password" name="retype_password" required>
+    <span id="retype_password_error" class="error-message"></span><br><br>
+    
+    <label for="fullname">Full Name<span style="color: red;">*</span></label>
+    <input type="text" id="fullname" name="fullname" required value="{{ fullname }}"><br>
+    
+    <label for="dob">Date of Birth<span style="color: red;">*</span></label>
+    <input type="date" id="dob" name="dob" required value="{{ dob }}"><br>
+    <div id="dobError" class="error-message"></div>
+    
+    <label for="gender">Gender<span style="color: red;">*</span></label>
+    <select id="gender" name="gender" required>
+        <option value="">Select Gender</option>
+        <option value="male" {% if gender == "male" %}selected{% endif %}>Male</option>
+        <option value="female" {% if gender == "female" %}selected{% endif %}>Female</option>
+        <option value="other" {% if gender == "other" %}selected{% endif %}>Other</option>
+    </select><br><br>
+    
+    <label for="street_address">Street Address<span style="color: red;">*</span></label>
+    <input type="text" id="street_address" name="street_address" required value="{{ street_address }}"><br>
+    
+    <label for="city">City<span style="color: red;">*</span></label>
+    <input type="text" id="city" name="city" required value="{{ city }}"><br>
+    
+    <label for="state">State<span style="color: red;">*</span></label>
+    <select id="state" name="state" required>
+    <option value="" disabled selected>Select State</option>
+    <option value="AL" {% if state == "AL" %}selected{% endif %}>Alabama</option>
+    <option value="AK" {% if state == "AK" %}selected{% endif %}>Alaska</option>
+    <option value="AZ" {% if state == "AZ" %}selected{% endif %}>Arizona</option>
+    <option value="AR" {% if state == "AR" %}selected{% endif %}>Arkansas</option>
+    <option value="CA" {% if state == "CA" %}selected{% endif %}>California</option>
+    <option value="CO" {% if state == "CO" %}selected{% endif %}>Colorado</option>
+    <option value="CT" {% if state == "CT" %}selected{% endif %}>Connecticut</option>
+    <option value="DE" {% if state == "DE" %}selected{% endif %}>Delaware</option>
+    <option value="FL" {% if state == "FL" %}selected{% endif %}>Florida</option>
+    <option value="GA" {% if state == "GA" %}selected{% endif %}>Georgia</option>
+    <option value="HI" {% if state == "HI" %}selected{% endif %}>Hawaii</option>
+    <option value="ID" {% if state == "ID" %}selected{% endif %}>Idaho</option>
+    <option value="IL" {% if state == "IL" %}selected{% endif %}>Illinois</option>
+    <option value="IN" {% if state == "IN" %}selected{% endif %}>Indiana</option>
+    <option value="IA" {% if state == "IA" %}selected{% endif %}>Iowa</option>
+    <option value="KS" {% if state == "KS" %}selected{% endif %}>Kansas</option>
+    <option value="KY" {% if state == "KY" %}selected{% endif %}>Kentucky</option>
+    <option value="LA" {% if state == "LA" %}selected{% endif %}>Louisiana</option>
+    <option value="ME" {% if state == "ME" %}selected{% endif %}>Maine</option>
+    <option value="MD" {% if state == "MD" %}selected{% endif %}>Maryland</option>
+    <option value="MA" {% if state == "MA" %}selected{% endif %}>Massachusetts</option>
+    <option value="MI" {% if state == "MI" %}selected{% endif %}>Michigan</option>
+    <option value="MN" {% if state == "MN" %}selected{% endif %}>Minnesota</option>
+    <option value="MS" {% if state == "MS" %}selected{% endif %}>Mississippi</option>
+    <option value="MO" {% if state == "MO" %}selected{% endif %}>Missouri</option>
+    <option value="MT" {% if state == "MT" %}selected{% endif %}>Montana</option>
+    <option value="NE" {% if state == "NE" %}selected{% endif %}>Nebraska</option>
+    <option value="NV" {% if state == "NV" %}selected{% endif %}>Nevada</option>
+    <option value="NH" {% if state == "NH" %}selected{% endif %}>New Hampshire</option>
+    <option value="NJ" {% if state == "NJ" %}selected{% endif %}>New Jersey</option>
+    <option value="NM" {% if state == "NM" %}selected{% endif %}>New Mexico</option>
+    <option value="NY" {% if state == "NY" %}selected{% endif %}>New York</option>
+    <option value="NC" {% if state == "NC" %}selected{% endif %}>North Carolina</option>
+    <option value="ND" {% if state == "ND" %}selected{% endif %}>North Dakota</option>
+    <option value="OH" {% if state == "OH" %}selected{% endif %}>Ohio</option>
+    <option value="OK" {% if state == "OK" %}selected{% endif %}>Oklahoma</option>
+    <option value="OR" {% if state == "OR" %}selected{% endif %}>Oregon</option>
+    <option value="PA" {% if state == "PA" %}selected{% endif %}>Pennsylvania</option>
+    <option value="RI" {% if state == "RI" %}selected{% endif %}>Rhode Island</option>
+    <option value="SC" {% if state == "SC" %}selected{% endif %}>South Carolina</option>
+    <option value="SD" {% if state == "SD" %}selected{% endif %}>South Dakota</option>
+    <option value="TN" {% if state == "TN" %}selected{% endif %}>Tennessee</option>
+    <option value="TX" {% if state == "TX" %}selected{% endif %}>Texas</option>
+    <option value="UT" {% if state == "UT" %}selected{% endif %}>Utah</option>
+    <option value="VT" {% if state == "VT" %}selected{% endif %}>Vermont</option>
+    <option value="VA" {% if state == "VA" %}selected{% endif %}>Virginia</option>
+    <option value="WA" {% if state == "WA" %}selected{% endif %}>Washington</option>
+    <option value="WV" {% if state == "WV" %}selected{% endif %}>West Virginia</option>
+    <option value="WI" {% if state == "WI" %}selected{% endif %}>Wisconsin</option>
+    <option value="WY" {% if state == "WY" %}selected{% endif %}>Wyoming</option>
+    </select><br><br>
+    
+    <label for="zipcode">Zipcode<span style="color: red;">*</span></label>
+    <input type="text" id="zipcode" name="zipcode" maxlength="5" pattern="[0-9]+" required value="{{ zipcode }}"><br>
+    
+    <label for="contactInfo">Phone Number<span style="color: red;">*</span></label>
+    <input type="text" id="contactInfo" name="contactInfo" maxlength="10" pattern="[0-9]+" required value="{{ contactInfo }}"><br><br><br>
+    
+    
+    <label for="identity_proof">Proof of Identity<span style="color: red;">*</span></label>
+    <input type="file" id="identity_proof" name="identity_proof" accept=".jpg, .jpeg, .png, .pdf" required><br>
+    <div id="identity_proof_info" class="small-text">
+        Acceptable submissions: Government-issued photo identification card (e.g., driver's license, passport, national ID card), student ID card with photo
+    </div><br>
+
+    <input type="submit" value="Register">
+</form>
+
+<form id="adminForm" action="{% url 'registration' %}" method="post" onsubmit="return validateForm()" style="display: none">
+    <input type="hidden" name="role" id="admin_selected_role" value="Healthcare Admin">
+        
+    <label for="admin_email">Email<span style="color: red;">*</span></label>
+    <input type="email" id="admin_email" name="email" required value="{{ email }}"><br>
+
+    <label for="admin_password">Password<span style="color: red;">*</span></label>
+    <input type="password" id="admin_password" name="password" required onfocus="showPasswordRequirements()" onblur="hidePasswordRequirements()">
+    <div id="password_requirements" class="password-requirements" style="display: none;">
+        Password must be at least 8 characters long, cannot be common or similar to personal information, and cannot be fully numeric.
+    </div>
+    <span id="admin_password_error" class="error-message"></span><br>
+
+    <label for="admin_retype_password">Confirm Password<span style="color: red;">*</span></label>
+    <input type="password" id="admin_retype_password" name="retype_password" required>
+    <span id="admin_retype_password_error" class="error-message"></span><br><br>
+
+    <label for="admin_fullname">Name<span style="color: red;">*</span></label>
+    <input type="text" id="admin_fullname" name="fullname" required value="{{ fullname }}"><br>
+    
+    <label for="admin_contactInfo">Phone Number<span style="color: red;">*</span></label>
+    <input type="text" id="admin_contactInfo" name="contactInfo" maxlength="10" pattern="[0-9]+" required value="{{ contactInfo }}"><br>
+    
+    <label for="hospital_name">Healthcare Facility Name<span style="color: red;">*</span></label>
+    <input type="text" id="hospital_name" name="hospital_name" required value="{{ hospital_name }}"><br>
+    
+    <label for="facility_street_address">Facility Street Address<span style="color: red;">*</span></label>
+    <input type="text" id="facility_street_address" name="facility_street_address" required value="{{ facility_street_address }}"><br>
+
+    <label for="facility_city">Facility City<span style="color: red;">*</span></label>
+    <input type="text" id="facility_city" name="facility_city" required value="{{ facility_city }}"><br>
+
+    <label for="facility_state">Facility State<span style="color: red;">*</span></label>
+    <select id="facility_state" name="facility_state" required>
+    <option value="" disabled selected>Select State</option>
+    <option value="AL" {% if state == "AL" %}selected{% endif %}>Alabama</option>
+    <option value="AK" {% if state == "AK" %}selected{% endif %}>Alaska</option>
+    <option value="AZ" {% if state == "AZ" %}selected{% endif %}>Arizona</option>
+    <option value="AR" {% if state == "AR" %}selected{% endif %}>Arkansas</option>
+    <option value="CA" {% if state == "CA" %}selected{% endif %}>California</option>
+    <option value="CO" {% if state == "CO" %}selected{% endif %}>Colorado</option>
+    <option value="CT" {% if state == "CT" %}selected{% endif %}>Connecticut</option>
+    <option value="DE" {% if state == "DE" %}selected{% endif %}>Delaware</option>
+    <option value="FL" {% if state == "FL" %}selected{% endif %}>Florida</option>
+    <option value="GA" {% if state == "GA" %}selected{% endif %}>Georgia</option>
+    <option value="HI" {% if state == "HI" %}selected{% endif %}>Hawaii</option>
+    <option value="ID" {% if state == "ID" %}selected{% endif %}>Idaho</option>
+    <option value="IL" {% if state == "IL" %}selected{% endif %}>Illinois</option>
+    <option value="IN" {% if state == "IN" %}selected{% endif %}>Indiana</option>
+    <option value="IA" {% if state == "IA" %}selected{% endif %}>Iowa</option>
+    <option value="KS" {% if state == "KS" %}selected{% endif %}>Kansas</option>
+    <option value="KY" {% if state == "KY" %}selected{% endif %}>Kentucky</option>
+    <option value="LA" {% if state == "LA" %}selected{% endif %}>Louisiana</option>
+    <option value="ME" {% if state == "ME" %}selected{% endif %}>Maine</option>
+    <option value="MD" {% if state == "MD" %}selected{% endif %}>Maryland</option>
+    <option value="MA" {% if state == "MA" %}selected{% endif %}>Massachusetts</option>
+    <option value="MI" {% if state == "MI" %}selected{% endif %}>Michigan</option>
+    <option value="MN" {% if state == "MN" %}selected{% endif %}>Minnesota</option>
+    <option value="MS" {% if state == "MS" %}selected{% endif %}>Mississippi</option>
+    <option value="MO" {% if state == "MO" %}selected{% endif %}>Missouri</option>
+    <option value="MT" {% if state == "MT" %}selected{% endif %}>Montana</option>
+    <option value="NE" {% if state == "NE" %}selected{% endif %}>Nebraska</option>
+    <option value="NV" {% if state == "NV" %}selected{% endif %}>Nevada</option>
+    <option value="NH" {% if state == "NH" %}selected{% endif %}>New Hampshire</option>
+    <option value="NJ" {% if state == "NJ" %}selected{% endif %}>New Jersey</option>
+    <option value="NM" {% if state == "NM" %}selected{% endif %}>New Mexico</option>
+    <option value="NY" {% if state == "NY" %}selected{% endif %}>New York</option>
+    <option value="NC" {% if state == "NC" %}selected{% endif %}>North Carolina</option>
+    <option value="ND" {% if state == "ND" %}selected{% endif %}>North Dakota</option>
+    <option value="OH" {% if state == "OH" %}selected{% endif %}>Ohio</option>
+    <option value="OK" {% if state == "OK" %}selected{% endif %}>Oklahoma</option>
+    <option value="OR" {% if state == "OR" %}selected{% endif %}>Oregon</option>
+    <option value="PA" {% if state == "PA" %}selected{% endif %}>Pennsylvania</option>
+    <option value="RI" {% if state == "RI" %}selected{% endif %}>Rhode Island</option>
+    <option value="SC" {% if state == "SC" %}selected{% endif %}>South Carolina</option>
+    <option value="SD" {% if state == "SD" %}selected{% endif %}>South Dakota</option>
+    <option value="TN" {% if state == "TN" %}selected{% endif %}>Tennessee</option>
+    <option value="TX" {% if state == "TX" %}selected{% endif %}>Texas</option>
+    <option value="UT" {% if state == "UT" %}selected{% endif %}>Utah</option>
+    <option value="VT" {% if state == "VT" %}selected{% endif %}>Vermont</option>
+    <option value="VA" {% if state == "VA" %}selected{% endif %}>Virginia</option>
+    <option value="WA" {% if state == "WA" %}selected{% endif %}>Washington</option>
+    <option value="WV" {% if state == "WV" %}selected{% endif %}>West Virginia</option>
+    <option value="WI" {% if state == "WI" %}selected{% endif %}>Wisconsin</option>
+    <option value="WY" {% if state == "WY" %}selected{% endif %}>Wyoming</option>
+    </select><br><br>
+
+    <label for="facility_zipcode">Facility Zipcode<span style="color: red;">*</span></label>
+    <input type="text" id="facility_zipcode" name="facility_zipcode" maxlength="5" pattern="[0-9]+" required value="{{ facility_zipcode }}"><br>
+
+    <input type="submit" value="Register">
+</form>
+<div style="text-align:center; margin-top:20px;">
+  Already have an account? <a href="{% url 'login' %}">Login</a>
+</div><br>
+
+</body>
+</html>

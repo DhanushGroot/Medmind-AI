@@ -1,0 +1,416 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Score</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .custom-select {
+            position: relative;
+            font-family: Arial;
+        }
+
+        .error-message {
+            color: darkred;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            width: 95%;
+            margin-left: 15px;
+            margin-right: auto;
+            box-sizing: border-box;
+        }
+
+        .custom-select select {
+            display: none;
+        }
+
+        .select-items div {
+            color: #ffffff;
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+            cursor: pointer;
+        }
+
+        .select-items div:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        input[type=date]:invalid::-webkit-datetime-edit {
+            color: #999;
+        }
+
+        .cardStyles {
+            width: 100% !important;
+            border-radius: 15px !important;
+            box-shadow: 2px 7px #E1AFD1 !important;
+        }
+
+        .submitButton {
+            text-align: center !important;
+            background-color: #5B0888;
+            font-size: 15px;
+            color: white;
+            border: 2px solid #5B0888;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submitButton:hover {
+            color: white;
+            background-color: #2d0444;
+            border: 2px solid #2d0444;
+            text-decoration: none;
+        }
+
+        .submit-button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'header.html' %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <!-- For placement of the submit card -->
+            </div>
+            <div class="col-md-8">
+                {% if user.is_authenticated and user.is_patient %}
+                    <div class="card cardStyles">
+                        <div class="card-body">
+                            <h4 class="card-title">Submit a Health Request</h4>
+                            <hr />
+                        </div>
+                        <form id="submitRecord" method="post" onsubmit="return validateRecordForm()" action="{% url 'new_health_record'%}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3 ml-3 mr-3">
+                                <div class="dropdown">
+                                    <select id="hospitalSelect" class="custom-select form-select" name="hospitalID" required>
+                                        <option value="" selected disabled>Please select the Hospital</option>
+                                        {% for hos in data.hospitals %}
+                                        <option value="{{hos.id}}">{{hos.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="mb-3 ml-3 mr-3">
+                                <div class="dropdown">
+                                    <select id="doctorSelect" class="custom-select form-select" name="doctorId" required>
+                                        <option value="" selected disabled>Please select the Doctor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="mb-3 ml-3 mr-3">
+                                <div class="dropdown">
+                                    <select id="appointmentType" class="custom-select form-select" name="appointmentType" required>
+                                        <option value="" selected disabled>Please select the type of Appointment</option>
+                                        {% for key, value in data.appointmentType.items %}
+                                        <option value="{{key}}">{{value}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="apppointmentProps">
+                                <!-- Data filled dynamically -->
+                            </div>
+                        
+                            <div id="documents" class="mb-3 ml-3 mr-3">
+                                <label for="medical_document">Medical Document (If any)</label>
+                                <input type="file" id="medical_document" name="medical_document" accept=".jpg, .jpeg, .png, .pdf"><br>
+                            </div>
+
+                            <div class="col-12 submit-button-container">
+                                <button type="submit" class="submitButton">Submit</button>
+                            </div>
+
+                        </form>
+
+                        <div class="col-12" id="message">
+
+                        </div>
+                    </div>
+
+                {% elif user.is_authenticated and user.is_staff %}
+                    <div class="card cardStyles">
+                        <div class="card-body">
+                            <h4 class="card-title">Submit a Health Request</h4>
+                            <hr />
+                        </div>
+                        <form id="submitRecord" method="post" action="{% url 'new_health_record'%}" onsubmit="return validateRecordForm()" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" id="staffHospitalId" name="hospitalID" value="{{ data.hospitalID }}">
+
+                            {% if error_message %}
+                                <div id="error_message" class="error-message">
+                                    {{ error_message }}
+                                </div>
+                            {% endif %}
+
+                            <div class="mb-3 ml-3 mr-3">
+                                <label for="userEmail" class="form-label"></label>
+                                <input type="email" class="form-control" id="userEmail" name="userEmail" placeholder="Please enter the patient's email" required>
+                            </div>
+
+
+                            <div class="mb-3 ml-3 mr-3">
+                                <div class="dropdown">
+                                    <select id="doctorSelect" class="custom-select form-select" name="doctorId" required>
+                                        <option value="" selected disabled>Please select the Doctor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="mb-3 ml-3 mr-3">
+                                <div class="dropdown">
+                                    <select id="appointmentType" class="custom-select form-select" name="appointmentType" required>
+                                        <option value="" selected disabled>Please select the type of Appointment</option>
+                                        {% for key, value in data.appointmentType.items %}
+                                        <option value="{{key}}">{{value}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="apppointmentProps">
+                                <!-- Data filled dynamically -->
+                            </div>
+                        
+                            <div id="documents" class="mb-3 ml-3 mr-3">
+                                <label for="medical_document">Medical Document (If any)</label>
+                                <input type="file" id="medical_document" name="medical_document" accept=".jpg, .jpeg, .png, .pdf"><br>
+                            </div>
+
+                            <div class="col-12 submit-button-container">
+                                <button type="submit" class="submitButton">Submit</button>
+                            </div>
+
+                        </form>
+
+                        <div class="col-12" id="message">
+
+                        </div>
+                    </div>
+
+
+                {% endif %}
+
+            </div>
+            <div class="col-md-2">
+                <!-- For placement of the submit card -->
+            </div>
+        </div>
+    </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var hospitalSelect = document.getElementById("hospitalSelect");
+                var staffHospitalIdElement = document.getElementById("staffHospitalId")
+
+                function getDoctors(hospital_id) {
+                    fetch('{% url "get_doctors" hos_id=0 %}'.replace('0', hospital_id)
+                        , {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            var selectElement = document.getElementById("doctorSelect");
+                            selectElement.innerHTML = '<option value="" selected disabled>Please select the Doctor</option>';
+
+                            data['doctors'].forEach(function (doctor) {
+                                var option = new Option(doctor.name, doctor.id);
+                                selectElement.add(option);
+                            });
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                }
+
+                if (hospitalSelect) {
+                    hospitalSelect.addEventListener("change", function () {
+                        getDoctors(this.value);
+                    });
+                }
+
+                if (staffHospitalIdElement && staffHospitalIdElement.value) {
+                    getDoctors(staffHospitalIdElement.value);
+                }
+            });
+
+            function inputType(keyName) {
+                switch (keyName) {
+                    case "date":
+                        return "date"
+                        break;
+                    case "cylindrical_power_right":
+                    case "cylindrical_power_left":
+                    case "spherical_power_left":
+                    case "spherical_power_right":
+                    case "hemoglobin_count":
+                    case "platelet_count":
+                    case "pulse_rate":
+                    case "fasting_sugar_level":
+                    case "random_sugar_level":
+                        return "number"
+                        break;
+
+                    default:
+                        return "text"
+                }
+            }
+
+            function stepSize(keyName) {
+                switch (keyName) {
+                    case "cylindrical_power_right":
+                    case "cylindrical_power_left":
+                    case "spherical_power_left":
+                    case "spherical_power_right":
+                        return "0.01"
+                        break;
+                    case "hemoglobin_count":
+                    case "platelet_count":
+                    case "pulse_rate":
+                    case "fasting_sugar_level":
+                    case "random_sugar_level":
+                        return "1"
+                        break;
+
+                    default:
+                        return "null"
+                }
+            }
+
+            function setPlaceholder(keyName, value) {
+                switch (keyName) {
+                    case "cylindrical_power_right":
+                    case "cylindrical_power_left":
+                    case "spherical_power_left":
+                    case "spherical_power_right":
+                    case "hemoglobin_count":
+                    case "platelet_count":
+                    case "pulse_rate":
+                    case "fasting_sugar_level":
+                    case "random_sugar_level":
+                        return "0"
+                        break;
+                    case "second_visit":
+                        return "Yes/No"
+                    default:
+                        return "Enter the " + value;
+                }
+            }
+
+            function addingUnits(keyName) {
+                switch (keyName) {
+                    case "cylindrical_power_right":
+                    case "cylindrical_power_left":
+                    case "spherical_power_left":
+                    case "spherical_power_right":
+                        return `<span class="input-group-text appointmentProperties" id="basic-addon3">Diopters</span>`
+                    case "hemoglobin_count":
+                        return `<span class="input-group-text appointmentProperties" id="basic-addon3">g/dl</span>`
+                    case "platelet_count":
+                        return `<span class="input-group-text appointmentProperties" id="basic-addon3">/mm<sup>3</sup></span>`
+                    case "pulse_rate":
+                        return `<span class="input-group-text appointmentProperties" id="basic-addon3">bpm</span>`
+                    case "fasting_sugar_level":
+                    case "random_sugar_level":
+                        return `<span class="input-group-text appointmentProperties" id="basic-addon3">mg/dL</span>`
+                    case "blood_pressure":
+                        return `<span class="input-group-text appointmentProperties" id="basic-addon3">mm Hg</span>`
+                    default:
+                        return ``;
+                }
+            }
+
+            function getAppointmentprops(appointmentName) {
+                var appointmentType = `{{ data.appointmentProps|safe }}`;
+                jsonified_appointmentTypes = JSON.parse(appointmentType)
+                selected_appointment = jsonified_appointmentTypes[appointmentName]
+
+                var props = `
+                        <br/>
+                        <div class="mb-3 ml-3 mr-3">
+                            <h5> Appointment Properties</h5>
+                            <hr/>
+                        </div>`
+                for (var [key, value] of Object.entries(selected_appointment)) {
+                    
+                    var today = new Date().toISOString().split('T')[0];
+                    
+                    props += `<div class="mb-3 ml-3 mr-3">                            
+                            <div class="input-group">
+                                <span class="input-group-text labelProperties" id="basic-addon3">${value}</span>
+                                <input name="${key}"
+                                    id="${key}"
+                                    type="${inputType(key)}"
+                                    ${key === 'date' ? `min="1910-01-01" max="${today}"` : ''}
+                                    step="${stepSize(key)}" 
+                                    class="form-control" id="exampleFormControlInput1"
+                                    placeholder="${setPlaceholder(key, value)}">
+                                ${addingUnits(key)}                                
+                            </div>
+                          </div>`
+                }
+                document.getElementById('apppointmentProps').innerHTML = props
+            }
+
+            document.getElementById("appointmentType").addEventListener("change", function () {
+                var selectedValue = this.value;
+                getAppointmentprops(selectedValue)
+            })
+
+
+            function validateRecordForm() {
+
+                var secondVisitElement = document.getElementById("second_visit");
+                if (secondVisitElement && secondVisitElement.value.length>0){
+                    var secondVisitValue = secondVisitElement.value;
+                    if(!['yes', 'no'].includes(secondVisitValue.toLowerCase())) {
+                        document.getElementById('message').innerHTML = `<div class='alert alert-danger dropdownStyle' role='alert'>
+                            Please Enter Yes/No for Second Visit!
+                            </div>`;
+                        return false;
+                    }
+                }
+
+                var bloodGroupElement = document.getElementById("blood_group");
+                if (bloodGroupElement && bloodGroupElement.value.length>0) {
+                    var bloodGroupValue = bloodGroupElement.value;
+                    // ensure only certain values can be entered 
+                    if (!['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'N/A'].includes(bloodGroupValue)) {
+                        document.getElementById('message').innerHTML = `<div class='alert alert-danger dropdownStyle' role='alert'>
+                            Invalid Blood Type Provided!
+                            </div>`;
+                        return false;
+                    }
+                }
+
+                document.getElementById('message').innerHTML = "";
+                return true;
+            }
+        </script>
+</body>
+
+</html>
